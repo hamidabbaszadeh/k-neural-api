@@ -68,10 +68,10 @@ def rgb2lab(r, g, b):
     else:
         z = (7.787 * z) + 16/116
 
-    l  = (116 * y) - 16
-    a  = 500 * (x - y)
+    lightness = (116 * y) - 16
+    a = 500 * (x - y)
     bb = 200 * (y - z)
-    return l, a, bb
+    return lightness, a, bb
 
 def rotate(image, angle, dtype='float32'):
     """Rotates the input image by the angle.
