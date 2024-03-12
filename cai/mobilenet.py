@@ -49,7 +49,7 @@ https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet_v1
 
 - [MobileNets: Efficient Convolutional Neural Networks for
    Mobile Vision Applications](https://arxiv.org/abs/1704.04861)
-   
+
 COPYRIGHT
 
 Copyright (c) 2016 - 2021, the respective contributors.
@@ -62,7 +62,7 @@ The initial code of this file came from https://github.com/keras-team/keras-appl
 that occured earlier than the first commit in the present repository,
 please see the original Keras repository.
 
-The original file from above link was modified. Modifications can be tracked via 
+The original file from above link was modified. Modifications can be tracked via
 git commits at https://github.com/joaopauloschuler/k-neural-api/blob/master/cai/mobilenet.py
 
 LICENSE
@@ -87,6 +87,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import keras.utils
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -94,16 +95,19 @@ from tensorflow.keras import backend
 
 import cai.layers
 
-def MobileNet(input_shape=None,
-              alpha=1.0,
-              depth_multiplier=1,
-              dropout=1e-3,
-              include_top=True,
-              weights=None,
-              input_tensor=None,
-              pooling=None,
-              classes=1000,
-              **kwargs):
+
+def MobileNet(
+    input_shape=None,
+    alpha=1.0,
+    depth_multiplier=1,
+    dropout=1e-3,
+    include_top=True,
+    weights=None,
+    input_tensor=None,
+    pooling=None,
+    classes=1000,
+    **kwargs,
+):
     """Instantiates the MobileNet architecture.
 
     # Arguments
@@ -164,50 +168,52 @@ def MobileNet(input_shape=None,
     x = _conv_block(img_input, 32, alpha, strides=(2, 2))
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
 
-    x = _depthwise_conv_block(x, 128, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=2)
+    x = _depthwise_conv_block(
+        x, 128, alpha, depth_multiplier, strides=(2, 2), block_id=2
+    )
     x = _depthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3)
 
-    x = _depthwise_conv_block(x, 256, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=4)
+    x = _depthwise_conv_block(
+        x, 256, alpha, depth_multiplier, strides=(2, 2), block_id=4
+    )
     x = _depthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5)
 
-    x = _depthwise_conv_block(x, 512, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=6)
+    x = _depthwise_conv_block(
+        x, 512, alpha, depth_multiplier, strides=(2, 2), block_id=6
+    )
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=7)
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=8)
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=9)
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=10)
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11)
 
-    x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=12)
+    x = _depthwise_conv_block(
+        x, 1024, alpha, depth_multiplier, strides=(2, 2), block_id=12
+    )
     x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
 
     if include_top:
-        if backend.image_data_format() == 'channels_first':
+        if backend.image_data_format() == "channels_first":
             shape = (int(1024 * alpha), 1, 1)
         else:
             shape = (1, 1, int(1024 * alpha))
 
         x = layers.GlobalAveragePooling2D()(x)
-        x = layers.Reshape(shape, name='reshape_1')(x)
-        x = layers.Dropout(dropout, name='dropout')(x)
-        x = layers.Conv2D(classes, (1, 1),
-                          padding='same',
-                          name='conv_preds')(x)
-        x = layers.Reshape((classes,), name='reshape_2')(x)
-        x = layers.Activation('softmax', name='act_softmax')(x)
+        x = layers.Reshape(shape, name="reshape_1")(x)
+        x = layers.Dropout(dropout, name="dropout")(x)
+        x = layers.Conv2D(classes, (1, 1), padding="same", name="conv_preds")(x)
+        x = layers.Reshape((classes,), name="reshape_2")(x)
+        x = layers.Activation("softmax", name="act_softmax")(x)
     else:
-        if pooling == 'avg':
+        if pooling == "avg":
             x = layers.GlobalAveragePooling2D()(x)
-        elif pooling == 'max':
+        elif pooling == "max":
             x = layers.GlobalMaxPooling2D()(x)
 
     inputs = img_input
 
     # Create model.
-    model = keras.models.Model(inputs, x, name='mobilenetv1')
+    model = keras.models.Model(inputs, x, name="mobilenetv1")
 
     return model
 
@@ -261,20 +267,24 @@ def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
     # Returns
         Output tensor of block.
     """
-    channel_axis = 1 if backend.image_data_format() == 'channels_first' else -1
+    channel_axis = 1 if backend.image_data_format() == "channels_first" else -1
     filters = int(filters * alpha)
-    x = layers.ZeroPadding2D(padding=((0, 1), (0, 1)), name='conv1_pad')(inputs)
-    x = layers.Conv2D(filters, kernel,
-                      padding='valid',
-                      use_bias=False,
-                      strides=strides,
-                      name='conv1')(x)
-    x = layers.BatchNormalization(axis=channel_axis, name='conv1_bn')(x)
-    return layers.ReLU(6., name='conv1_relu')(x)
+    x = layers.ZeroPadding2D(padding=((0, 1), (0, 1)), name="conv1_pad")(inputs)
+    x = layers.Conv2D(
+        filters, kernel, padding="valid", use_bias=False, strides=strides, name="conv1"
+    )(x)
+    x = layers.BatchNormalization(axis=channel_axis, name="conv1_bn")(x)
+    return layers.ReLU(6.0, name="conv1_relu")(x)
 
 
-def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
-                          depth_multiplier=1, strides=(1, 1), block_id=1):
+def _depthwise_conv_block(
+    inputs,
+    pointwise_conv_filters,
+    alpha,
+    depth_multiplier=1,
+    strides=(1, 1),
+    block_id=1,
+):
     """Adds a depthwise convolution block.
 
     A depthwise convolution block consists of a depthwise conv,
@@ -326,32 +336,37 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
     # Returns
         Output tensor of block.
     """
-    channel_axis = 1 if backend.image_data_format() == 'channels_first' else -1
+    channel_axis = 1 if backend.image_data_format() == "channels_first" else -1
     pointwise_conv_filters = int(pointwise_conv_filters * alpha)
 
     if strides == (1, 1):
         x = inputs
     else:
-        x = layers.ZeroPadding2D(((0, 1), (0, 1)),
-                                 name='conv_pad_%d' % block_id)(inputs)
-    x = layers.DepthwiseConv2D((3, 3),
-                               padding='same' if strides == (1, 1) else 'valid',
-                               depth_multiplier=depth_multiplier,
-                               strides=strides,
-                               use_bias=False,
-                               name='conv_dw_%d' % block_id)(x)
-    x = layers.BatchNormalization(
-        axis=channel_axis, name='conv_dw_%d_bn' % block_id)(x)
-    x = layers.ReLU(6., name='conv_dw_%d_relu' % block_id)(x)
+        x = layers.ZeroPadding2D(((0, 1), (0, 1)), name="conv_pad_%d" % block_id)(
+            inputs
+        )
+    x = layers.DepthwiseConv2D(
+        (3, 3),
+        padding="same" if strides == (1, 1) else "valid",
+        depth_multiplier=depth_multiplier,
+        strides=strides,
+        use_bias=False,
+        name="conv_dw_%d" % block_id,
+    )(x)
+    x = layers.BatchNormalization(axis=channel_axis, name="conv_dw_%d_bn" % block_id)(x)
+    x = layers.ReLU(6.0, name="conv_dw_%d_relu" % block_id)(x)
 
-    x = layers.Conv2D(pointwise_conv_filters, (1, 1),
-                      padding='same',
-                      use_bias=False,
-                      strides=(1, 1),
-                      name='conv_pw_%d' % block_id)(x)
-    x = layers.BatchNormalization(axis=channel_axis,
-                                  name='conv_pw_%d_bn' % block_id)(x)
-    return layers.ReLU(6., name='conv_pw_%d_relu' % block_id)(x)
+    x = layers.Conv2D(
+        pointwise_conv_filters,
+        (1, 1),
+        padding="same",
+        use_bias=False,
+        strides=(1, 1),
+        name="conv_pw_%d" % block_id,
+    )(x)
+    x = layers.BatchNormalization(axis=channel_axis, name="conv_pw_%d_bn" % block_id)(x)
+    return layers.ReLU(6.0, name="conv_pw_%d_relu" % block_id)(x)
+
 
 def kconv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1), activation=None):
     """Adds an initial convolution layer (with batch normalization and relu6).
@@ -402,27 +417,31 @@ def kconv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1), activatio
     # Returns
         Output tensor of block.
     """
-    channel_axis = 1 if backend.image_data_format() == 'channels_first' else -1
+    channel_axis = 1 if backend.image_data_format() == "channels_first" else -1
     filters = int(filters * alpha)
-    x = layers.ZeroPadding2D(padding=((0, 1), (0, 1)), name='conv1_pad')(inputs)
-    x = layers.Conv2D(filters, kernel,
-                      padding='valid',
-                      use_bias=False,
-                      strides=strides,
-                      name='conv1')(x)
-    x = layers.BatchNormalization(axis=channel_axis, name='conv1_bn')(x)
+    x = layers.ZeroPadding2D(padding=((0, 1), (0, 1)), name="conv1_pad")(inputs)
+    x = layers.Conv2D(
+        filters, kernel, padding="valid", use_bias=False, strides=strides, name="conv1"
+    )(x)
+    x = layers.BatchNormalization(axis=channel_axis, name="conv1_bn")(x)
     if activation is not None:
-        x = layers.Activation(activation=activation, name='conv1_act')(x)
+        x = layers.Activation(activation=activation, name="conv1_act")(x)
     else:
-        x = layers.ReLU(6., name='conv1_relu')(x)
+        x = layers.ReLU(6.0, name="conv1_relu")(x)
     return x
 
-def kdepthwise_conv_block(inputs, pointwise_conv_filters, alpha,
-    depth_multiplier=1, strides=(1, 1), block_id=1,
+
+def kdepthwise_conv_block(
+    inputs,
+    pointwise_conv_filters,
+    alpha,
+    depth_multiplier=1,
+    strides=(1, 1),
+    block_id=1,
     d_separable_activation=None,
     activation=keras.activations.swish,
-    kType=0 
-    ):
+    kType=0,
+):
     """Adds an optimized depthwise convolution block.
 
     A depthwise convolution block consists of a depthwise conv,
@@ -478,39 +497,54 @@ def kdepthwise_conv_block(inputs, pointwise_conv_filters, alpha,
         Output tensor of block.
     """
     channel_axis = cai.layers.GetChannelAxis()
-    
+
     pointwise_conv_filters = int(pointwise_conv_filters * alpha)
 
     if strides == (1, 1):
         x = inputs
     else:
-        x = layers.ZeroPadding2D(((0, 1), (0, 1)),
-                                 name='conv_pad_%d' % block_id)(inputs)
-    x = layers.DepthwiseConv2D((3, 3),
-                               padding='same' if strides == (1, 1) else 'valid',
-                               depth_multiplier=depth_multiplier,
-                               strides=strides,
-                               use_bias=False,
-                               name='conv_dw_%d' % block_id)(x)
-    x = layers.BatchNormalization(
-        axis=channel_axis, name='conv_dw_%d_bn' % block_id)(x)
+        x = layers.ZeroPadding2D(((0, 1), (0, 1)), name="conv_pad_%d" % block_id)(
+            inputs
+        )
+    x = layers.DepthwiseConv2D(
+        (3, 3),
+        padding="same" if strides == (1, 1) else "valid",
+        depth_multiplier=depth_multiplier,
+        strides=strides,
+        use_bias=False,
+        name="conv_dw_%d" % block_id,
+    )(x)
+    x = layers.BatchNormalization(axis=channel_axis, name="conv_dw_%d_bn" % block_id)(x)
 
     if d_separable_activation is not None:
-        x = layers.Activation(activation=d_separable_activation, name='conv_dw_%d_act' % block_id)(x)
+        x = layers.Activation(
+            activation=d_separable_activation, name="conv_dw_%d_act" % block_id
+        )(x)
     else:
-        x = layers.ReLU(6., name='conv_dw_%d_relu' % block_id)(x)
+        x = layers.ReLU(6.0, name="conv_dw_%d_relu" % block_id)(x)
 
-    #x = layers.Conv2D(pointwise_conv_filters, (1, 1),
+    # x = layers.Conv2D(pointwise_conv_filters, (1, 1),
     #                  padding='same',
     #                  use_bias=False,
     #                  strides=(1, 1),
     #                  name='conv_pw_%d' % block_id)(x)
-    #x = layers.BatchNormalization(axis=channel_axis,
+    # x = layers.BatchNormalization(axis=channel_axis,
     #                             name='conv_pw_%d_bn' % block_id)(x)
-    x = cai.layers.kPointwiseConv2D(x, filters=pointwise_conv_filters, channel_axis=channel_axis, name='conv_pw_%d_bn' % block_id, activation=activation, has_batch_norm=True, use_bias=False, kType=kType)
-    return x #layers.ReLU(6., name='conv_pw_%d_relu' % block_id)(x)
+    x = cai.layers.kPointwiseConv2D(
+        x,
+        filters=pointwise_conv_filters,
+        channel_axis=channel_axis,
+        name="conv_pw_%d_bn" % block_id,
+        activation=activation,
+        has_batch_norm=True,
+        use_bias=False,
+        kType=kType,
+    )
+    return x  # layers.ReLU(6., name='conv_pw_%d_relu' % block_id)(x)
 
-def kMobileNet(input_shape=None,
+
+def kMobileNet(
+    input_shape=None,
     alpha=1.0,
     depth_multiplier=1,
     dropout=1e-3,
@@ -522,11 +556,11 @@ def kMobileNet(input_shape=None,
     conv1_activation=keras.activations.swish,
     d_separable_activation=keras.activations.swish,
     activation=keras.activations.swish,
-    kType=0, 
+    kType=0,
     l_ratio=0.0,
     ab_ratio=0.0,
-    skip_stride_cnt=-1
-    ):
+    skip_stride_cnt=-1,
+):
     """Instantiates the k optimized MobileNet architecture.
 
     # Arguments
@@ -591,72 +625,218 @@ def kMobileNet(input_shape=None,
     """
     img_input = keras.layers.Input(shape=input_shape)
 
-    channel_axis = cai.layers.GetChannelAxis();
+    channel_axis = cai.layers.GetChannelAxis()
+    local_strides = (1, 1) if (skip_stride_cnt >= 0) else (2, 2)
 
-    local_strides = (1, 1) if (skip_stride_cnt >=0) else (2, 2)
-
-    if (l_ratio > 0.0) and (ab_ratio>0.0):
-        l_branch = cai.layers.CopyChannels(0,1)(img_input)
-        ab_branch = cai.layers.CopyChannels(1,2)(img_input)
-        l_branch = kconv_block(l_branch, int(round(32*l_ratio)), alpha, strides=local_strides, activation=conv1_activation)
-        ab_branch = kconv_block(ab_branch, int(round(32*ab_ratio)), alpha, strides=local_strides, activation=conv1_activation)
-        x = keras.layers.Concatenate(axis=channel_axis, name='l-ab-paths-concat')([l_branch, ab_branch])
-    elif (l_ratio > 0.0) and (ab_ratio<=0.0):
-        l_branch = cai.layers.CopyChannels(0,1)(img_input)
-        x = kconv_block(l_branch, int(round(32*l_ratio)), alpha, strides=local_strides, activation=conv1_activation)
-    elif (l_ratio <= 0.0) and (ab_ratio>0.0):
-        ab_branch = cai.layers.CopyChannels(1,2)(img_input)
-        x = kconv_block(ab_branch, int(round(32*ab_ratio)), alpha, strides=local_strides, activation=conv1_activation)
+    if (l_ratio > 0.0) and (ab_ratio > 0.0):
+        l_branch = cai.layers.CopyChannels(0, 1)(img_input)
+        ab_branch = cai.layers.CopyChannels(1, 2)(img_input)
+        l_branch = kconv_block(
+            l_branch,
+            int(round(32 * l_ratio)),
+            alpha,
+            strides=local_strides,
+            activation=conv1_activation,
+        )
+        ab_branch = kconv_block(
+            ab_branch,
+            int(round(32 * ab_ratio)),
+            alpha,
+            strides=local_strides,
+            activation=conv1_activation,
+        )
+        x = keras.layers.Concatenate(axis=channel_axis, name="l-ab-paths-concat")(
+            [l_branch, ab_branch]
+        )
+    elif (l_ratio > 0.0) and (ab_ratio <= 0.0):
+        l_branch = cai.layers.CopyChannels(0, 1)(img_input)
+        x = kconv_block(
+            l_branch,
+            int(round(32 * l_ratio)),
+            alpha,
+            strides=local_strides,
+            activation=conv1_activation,
+        )
+    elif (l_ratio <= 0.0) and (ab_ratio > 0.0):
+        ab_branch = cai.layers.CopyChannels(1, 2)(img_input)
+        x = kconv_block(
+            ab_branch,
+            int(round(32 * ab_ratio)),
+            alpha,
+            strides=local_strides,
+            activation=conv1_activation,
+        )
     else:
-        x = kconv_block(img_input, 32, alpha, strides=local_strides, activation=conv1_activation)
+        x = kconv_block(
+            img_input, 32, alpha, strides=local_strides, activation=conv1_activation
+        )
 
-    x = kdepthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
+    x = kdepthwise_conv_block(
+        x,
+        64,
+        alpha,
+        depth_multiplier,
+        block_id=1,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
 
-    local_strides = (1, 1) if (skip_stride_cnt >=1) else (2, 2)
-    x = kdepthwise_conv_block(x, 128, alpha, depth_multiplier, strides=local_strides, block_id=2, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 128, alpha, depth_multiplier, block_id=3, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
+    local_strides = (1, 1) if (skip_stride_cnt >= 1) else (2, 2)
+    x = kdepthwise_conv_block(
+        x,
+        128,
+        alpha,
+        depth_multiplier,
+        strides=local_strides,
+        block_id=2,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        128,
+        alpha,
+        depth_multiplier,
+        block_id=3,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
 
-    local_strides = (1, 1) if (skip_stride_cnt >=2) else (2, 2)
-    x = kdepthwise_conv_block(x, 256, alpha, depth_multiplier, strides=local_strides, block_id=4, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 256, alpha, depth_multiplier, block_id=5, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
+    local_strides = (1, 1) if (skip_stride_cnt >= 2) else (2, 2)
+    x = kdepthwise_conv_block(
+        x,
+        256,
+        alpha,
+        depth_multiplier,
+        strides=local_strides,
+        block_id=4,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        256,
+        alpha,
+        depth_multiplier,
+        block_id=5,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
 
-    local_strides = (1, 1) if (skip_stride_cnt >=3) else (2, 2)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, strides=local_strides, block_id=6, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=7, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=8, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=9, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=10, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
+    local_strides = (1, 1) if (skip_stride_cnt >= 3) else (2, 2)
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        strides=local_strides,
+        block_id=6,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        block_id=7,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        block_id=8,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        block_id=9,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        block_id=10,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        512,
+        alpha,
+        depth_multiplier,
+        block_id=11,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
 
-    local_strides = (1, 1) if (skip_stride_cnt >=4) else (2, 2)
-    x = kdepthwise_conv_block(x, 1024, alpha, depth_multiplier, strides=local_strides, block_id=12, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
-    x = kdepthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13, d_separable_activation=d_separable_activation, activation=activation, kType=kType)
+    local_strides = (1, 1) if (skip_stride_cnt >= 4) else (2, 2)
+    x = kdepthwise_conv_block(
+        x,
+        1024,
+        alpha,
+        depth_multiplier,
+        strides=local_strides,
+        block_id=12,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
+    x = kdepthwise_conv_block(
+        x,
+        1024,
+        alpha,
+        depth_multiplier,
+        block_id=13,
+        d_separable_activation=d_separable_activation,
+        activation=activation,
+        kType=kType,
+    )
 
     if include_top:
-        if backend.image_data_format() == 'channels_first':
+        if backend.image_data_format() == "channels_first":
             shape = (int(1024 * alpha), 1, 1)
         else:
             shape = (1, 1, int(1024 * alpha))
 
         x = layers.GlobalAveragePooling2D()(x)
-        x = layers.Reshape(shape, name='reshape_1')(x)
-        x = layers.Dropout(dropout, name='dropout')(x)
+        x = layers.Reshape(shape, name="reshape_1")(x)
+        x = layers.Dropout(dropout, name="dropout")(x)
         # The last dense layer should not be optimized.
-        x = layers.Conv2D(classes, (1, 1),
-                          padding='same',
-                          name='conv_preds')(x)
-        #x = cai.layers.kPointwiseConv2D(x, filters=classes, channel_axis=cai.layers.GetChannelAxis(), name='conv_preds', activation=None, has_batch_norm=False, use_bias=True, kType=kType)
-        x = layers.Reshape((classes,), name='reshape_2')(x)
-        x = layers.Activation('softmax', name='act_softmax')(x)
+        x = layers.Conv2D(classes, (1, 1), padding="same", name="conv_preds")(x)
+        # x = cai.layers.kPointwiseConv2D(x, filters=classes, channel_axis=cai.layers.GetChannelAxis(), name='conv_preds', activation=None, has_batch_norm=False, use_bias=True, kType=kType)
+        x = layers.Reshape((classes,), name="reshape_2")(x)
+        x = layers.Activation("softmax", name="act_softmax")(x)
     else:
-        if pooling == 'avg':
+        if pooling == "avg":
             x = layers.GlobalAveragePooling2D()(x)
-        elif pooling == 'max':
+        elif pooling == "max":
             x = layers.GlobalMaxPooling2D()(x)
 
     inputs = img_input
 
     # Create model.
-    model = keras.models.Model(inputs, x, name='kmobilenetv1-'+str(kType))
+    model = keras.models.Model(inputs, x, name="kmobilenetv1-" + str(kType))
 
     return model
